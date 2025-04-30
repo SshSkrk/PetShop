@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pet Shop – Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f5faff; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background-color: #e3f2fd !important; }
+        .container { max-width: 700px; }
+        .form-label { font-weight: 500; color: #495057; margin-top: 10px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-warning-subtle px-4">
+    <a class="navbar-brand fw-bold" href="index.html">🐾 Pet Shop</a>
+</nav>
+
+<div class="container mt-4">
+    <h2 class="mb-4">👤 Your Profile</h2>
+
+    <!-- 👤 Basic Info -->
+    <form id="form-customer" class="mb-4">
+        <h5>👤 Basic Info</h5>
+        <label class="form-label" for="firstName">First Name</label>
+        <input type="text" class="form-control" id="firstName" required />
+
+        <label class="form-label" for="lastName">Last Name</label>
+        <input type="text" class="form-control" id="lastName" required />
+
+        <label class="form-label" for="password">Password</label>
+        <input type="password" class="form-control" id="password" required />
+
+        <button type="submit" class="btn btn-success w-100 mt-3">💾 Save Customer Info</button>
+    </form>
+
+    <!-- 📞 Contacts -->
+    <form id="form-contacts" class="mb-4">
+        <h5>📞 Contacts</h5>
+        <label class="form-label" for="email">Email</label>
+        <input type="email" class="form-control" id="email" required />
+
+        <label class="form-label" for="phone">Phone</label>
+        <input type="text" class="form-control" id="phone" required />
+
+        <button type="submit" class="btn btn-success w-100 mt-3">💾 Save Contacts</button>
+    </form>
+
+    <!-- 🏡 Address -->
+    <form id="form-address" class="mb-5">
+        <h5>🏡 Address</h5>
+        <label class="form-label" for="address">Street Address</label>
+        <input type="text" class="form-control" id="address" required />
+
+        <label class="form-label" for="city">City</label>
+        <input type="text" class="form-control" id="city" required />
+
+        <label class="form-label" for="country">Country</label>
+        <input type="text" class="form-control" id="country" required />
+
+        <button type="submit" class="btn btn-success w-100 mt-3">💾 Save Address</button>
+    </form>
+
+    <!-- 🧾 Orders -->
+    <h4 class="mt-4 mb-3">🧾 Your Orders</h4>
+    <div id="orders-list"></div>
+</div>
+
+<script>
+    const apiCurrentUser = '/api/current-user';
+    const apiMyOrders = '/api/my-orders';
+
+    let currentCustomer = null;
+    let currentOrders = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadProfile();
+        await loadOrders();
+    });
+
+    async function loadProfile() {
+        try {
+            const userRes = await fetch(apiCurrentUser);
+            currentCustomer = await userRes.json();
+            const customerId = currentCustomer.id;
+
+            // Load customer info first
+            fetch(`/api/customerInfo/getCustomerById/${customerId}`)
+                .then(res => res.json())
+                .then(customerDTO => {
+                    document.getElementById('firstName').value = customerDTO.firstName || '';
+                    document.getElementById('lastName').value = customerDTO.lastName || '';
+                    document.getElementById('password').value = customerDTO.password || '';
+                })
+                .catch(err => console.error("❌ Failed to load customer info:", err));
+
+            // Load contacts info next
+            fetch(`/api/customerInfo/getContacts/${customerId}`)
+                .then(res => res.json())
+                .then(contactsDTO => {
+                    document.getElementById('email').value = contactsDTO.email || '';
+                    document.getElementById('phone').value = contactsDTO.phone || '';
+                })
+                .catch(err => console.error("❌ Failed to load contacts:", err));
+
+            // Load address info last
+            fetch(`/api/customerInfo/getAddress/${customerId}`)
+                .then(res => res.json())
+                .then(addressDTO => {
+                    document.getElementById('address').value = addressDTO.address || '';
+                    document.getElementById('city').value = addressDTO.city || '';
+                    document.getElementById('country').value = addressDTO.country || '';
+                })
+                .catch(err => console.error("❌ Failed to load address:", err));
+
+        } catch (err) {
+            console.error("❌ Failed to load user ID from session:", err);
+        }
+    }
+
+
+    async function loadOrders() {
+        try {
+            const res = await fetch(apiMyOrders);
+            currentOrders = await res.json();
+            renderOrders(currentOrders);
+        } catch (err) {
+            console.error("❌ Failed to load orders:", err);
+        }
+    }
+
+    function renderOrders(orders) {
+        const container = document.getElementById('orders-list');
+        container.innerHTML = '';
+
+        if (!orders.length) {
+            container.innerHTML = '<div class="text-muted">No orders found.</div>';
+            return;
+        }
+
+        orders.forEach(order => {
+            const rows = (order.productsId || []).map((_, i) => `
+        <tr>
+          <td>${order.productsName[i]}</td>
+          <td>${order.productsQuantity[i]}</td>
+          <td>€${order.productsPrice[i].toFixed(2)}</td>
+          <td>€${(order.productsQuantity[i] * order.productsPrice[i]).toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+            const card = document.createElement('div');
+            card.className = 'card mb-4';
+            card.innerHTML = `
+        <div class="card-body">
+          <h6 class="card-title">Order #${order.id}</h6>
+          <p><strong>Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
+          <p><strong>Status:</strong> ${order.orderStatus}</p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Subtotal</th></tr>
+              </thead>
+              <tbody>
+                ${rows}
+                <tr class="table-secondary fw-bold">
+                  <td colspan="3" class="text-end">Total</td>
+                  <td>€${order.totalAmount.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+            container.appendChild(card);
+        });
+    }
+
+    async function submitTo(url, payload) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                alert("✅ Update successful!");
+                await loadProfile(); // 🔄 reload updated profile data
+            } else {
+                alert("⚠️ Update failed.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Error while submitting data.");
+        }
+    }
+
+
+    document.getElementById('form-customer').addEventListener('submit', async e => {
+        e.preventDefault();
+        const dto = {
+            id: currentCustomer.id,
+            username: currentCustomer.username,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            password: document.getElementById('password').value,
+            role: currentCustomer.role || "USER"
+        };
+        await submitTo('/api/customerUpdateOnly', dto);
+    });
+
+    document.getElementById('form-contacts').addEventListener('submit', async e => {
+        e.preventDefault();
+        const dto = {
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            customerId: currentCustomer.id,
+            customerUsername: currentCustomer.username
+        };
+        await submitTo('/api/customerInfo/updateContacts', dto);
+    });
+
+    document.getElementById('form-address').addEventListener('submit', async e => {
+        e.preventDefault();
+        const dto = {
+            address: document.getElementById('address').value,
+            city: document.getElementById('city').value,
+            country: document.getElementById('country').value,
+            customerId: currentCustomer.id,
+            customerUsername: currentCustomer.username
+        };
+        await submitTo('/api/customerInfo/updateAddress', dto);
+    });
+</script>
+
+</body>
+</html>

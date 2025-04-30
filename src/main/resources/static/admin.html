@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pet Shop – Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f5faff; /* light pastel blue background */
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .navbar {
+            background-color: #e3f2fd !important; /* pastel blue navbar */
+        }
+        .hero {
+            background-color: #ffffff;
+            padding: 4rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #0077b6;
+        }
+        .hero p {
+            color: #495057;
+        }
+        .btn-outline-secondary {
+            border-color: #74c0fc;
+            color: #0077b6;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #d0ebff;
+            color: #005fa3;
+        }
+        .btn-outline-primary {
+            border-color: #91d5ff;
+        }
+        .btn-outline-primary:hover {
+            background-color: #bae0ff;
+        }
+        .btn-outline-dark:hover {
+            background-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-warning-subtle px-4">
+    <a class="navbar-brand fw-bold" href="index.html">🐾 Pet Shop</a>
+</nav>
+
+
+<div class="container my-5">
+    <h1 class="text-center mb-5">🐾 Admin Dashboard</h1>
+
+
+
+
+
+    <!-- Section: Orders -->
+    <div class="mb-5">
+        <h2 class="h4 mb-3">📦 All Orders</h2>
+        <table class="table table-bordered" id="orders-table">
+            <thead class="table-light">
+            <tr>
+                <th>Order ID</th>
+                <th>Username</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Products (IDs)</th>
+                <th>Products (Names)</th>
+                <th>Products (Prices)</th>
+                <th>Products (Quantities)</th>
+                <th>Total</th>
+                <th>Action</th>
+
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h5 class="mt-4">🔎 Filter Orders by Username</h5>
+        <form id="orders-by-username-form" class="d-flex gap-2 mb-3">
+            <input type="text" id="orders-username" class="form-control" placeholder="Enter username..." required>
+            <button type="submit" class="btn btn-outline-primary">Filter</button>
+        </form>
+        <div id="filtered-orders"></div>
+    </div>
+    <br><br><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Section: Customers -->
+    <div class="mb-5">
+        <h2 class="h4 mb-3">👤 All Customers</h2>
+        <table class="table table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Orders</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="customers-table"></tbody>
+        </table>
+
+        <h5 class="mt-4">🔍 Search Customer by Username</h5>
+        <form id="search-customer-form" class="d-flex gap-2">
+            <input type="text" id="search-username" class="form-control" placeholder="Enter username..." required>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <div id="search-result" class="mt-3"></div>
+    </div>
+    <br><br><br>
+
+
+
+
+
+    <!-- Section: Register New Customer -->
+    <div class="mb-5">
+        <h2 class="h4 mb-3">➕ Register New Customer</h2>
+        <div class="card p-4 shadow-sm">
+            <form id="adminRegisterForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="newFirstName" placeholder="First Name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="newLastName" placeholder="Last Name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="newUsername" placeholder="Username" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="password" class="form-control" id="newPassword" placeholder="Password" required>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="newRole" required>
+                            <option value="USER" selected>USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button type="submit" class="btn btn-success">Create Customer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br><br><br>
+        <div class="container my-5">
+            <h2 class="mb-4 mb-3">🧃 Product Management</h2>
+
+
+
+
+            <!-- Create Product Form -->
+            <div class="card p-3 mb-4 shadow-sm">
+                <h5>Create New Product</h5>
+                <form id="createProductForm" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="productName" placeholder="Product Name" required />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" class="form-control" id="productPrice" placeholder="Price" step="0.01" min="0" required />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="productImage" placeholder="Image URL (optional)">
+                    </div>
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-success w-100">Add Product</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Products Table -->
+            <h5 class="mt-4">All Products</h5>
+            <table class="table table-bordered">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price ($)</th>
+                    <th>Image URL</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="productTable"></tbody>
+            </table>
+        </div>
+
+        <div class="container my-5">
+            <h2 class="text-center mb-4">📝 All Reviews (Admin)</h2>
+
+            <div class="card shadow-sm p-4">
+                <h5 class="mb-3">Review List</h5>
+                <div id="reviewList"></div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadOrders();
+            await loadCustomers();
+        });
+
+
+
+
+
+
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/admin/ListOfAllOrders');
+                const orders = await res.json();
+                const tableBody = document.querySelector('#orders-table tbody');
+                tableBody.innerHTML = '';
+
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.customerUsername || 'N/A'}</td>
+                <td>
+                    <input type="text" id="status-${order.id}" class="form-control form-control-sm" value="${order.orderStatus}">
+                </td>
+                <td>${new Date(order.orderDate).toLocaleString()}</td>
+                <td>${order.productsId?.join(', ') || 'N/A'}</td>
+                <td>${order.productsName?.join(', ') || 'N/A'}</td>
+                <td>${order.productsPrice?.map(price => `$${price.toFixed(2)}`).join(', ') || 'N/A'}</td>
+                <td>${order.productsQuantity?.join(', ') || 'N/A'}</td>
+                 <td>$${order.totalAmount.toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary update-order-btn" data-order-id="${order.id}">Update</button>
+                    <button class="btn btn-sm btn-danger delete-order-btn" data-order-id="${order.id}">Delete</button>
+                </td>
+            `;
+                    tableBody.appendChild(row);
+                });
+
+                // Event listeners for update/delete
+                document.querySelectorAll('.update-order-btn').forEach(button => {
+                    button.addEventListener('click', async () => {
+                        const id = parseInt(button.getAttribute('data-order-id'));
+                        const newStatus = document.getElementById(`status-${id}`).value;
+                        const res = await fetch('/api/admin/updateOrder', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, orderStatus: newStatus })
+                        });
+                        if (res.ok) alert(`✅ Order #${id} updated`);
+                        else alert("❌ Failed to update order.");
+                    });
+                });
+
+                document.querySelectorAll('.delete-order-btn').forEach(button => {
+                    button.addEventListener('click', async () => {
+                        const id = button.getAttribute('data-order-id');
+                        if (confirm(`Delete order #${id}?`)) {
+                            const res = await fetch(`/api/admin/deleteOrder/${id}`, { method: 'DELETE' });
+                            if (res.ok) {
+                                await loadOrders();
+                                alert("✅ Order deleted.");
+                            } else {
+                                alert("❌ Failed to delete order.");
+                            }
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error("Failed to load orders:", err);
+            }
+        }
+
+
+        // Filter Orders by Username
+        document.getElementById('orders-by-username-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const username = document.getElementById('orders-username').value.trim();
+            const resultDiv = document.getElementById('filtered-orders');
+            resultDiv.innerHTML = `<span class="text-muted">Loading orders for ${username}...</span>`;
+
+            try {
+                const res = await fetch(`/api/admin/ordersByCustomer/${encodeURIComponent(username)}`);
+
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        resultDiv.innerHTML = `<span class="text-warning">⚠️ No orders found for "${username}".</span>`;
+                    } else {
+                        resultDiv.innerHTML = `<span class="text-danger">❌ Error loading orders for "${username}". Please try again.</span>`;
+                    }
+                    return;
+                }
+
+                const orders = await res.json();
+
+                if (!orders.length) {
+                    resultDiv.innerHTML = `<span class="text-warning">⚠️ No orders found for "${username}".</span>`;
+                    return;
+                }
+
+                // Build a full table
+                resultDiv.innerHTML = `
+            <table class="table table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Products (IDs)</th>
+                        <th>Products (Names)</th>
+                        <th>Products (Prices)</th>
+                        <th>Products (Quantities)</th>
+                         <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="filtered-orders-body"></tbody>
+            </table>
+        `;
+
+                const tableBody = document.getElementById('filtered-orders-body');
+
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.customerUsername || 'N/A'}</td>
+                <td>${order.orderStatus}</td>
+                <td>${new Date(order.orderDate).toLocaleString()}</td>
+                <td>${order.productsId?.join(', ') || 'N/A'}</td>
+                <td>${order.productsName?.join(', ') || 'N/A'}</td>
+                <td>${order.productsPrice?.map(price => `$${price.toFixed(2)}`).join(', ') || 'N/A'}</td>
+                <td>${order.productsQuantity?.join(', ') || 'N/A'}</td>
+                <td>$${order.totalAmount.toFixed(2)}</td>
+            `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+                resultDiv.innerHTML = `<span class="text-danger">❌ Something went wrong. Could not load orders for "${username}".</span>`;
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+        async function loadCustomers() {
+            try {
+                const res = await fetch('/api/admin/ListOfAllCustomers');
+                const customers = await res.json();
+                const tableBody = document.getElementById('customers-table');
+                tableBody.innerHTML = '';
+
+                for (const customer of customers) {
+                    // Fetch full contacts and address info
+                    const [contacts, address] = await Promise.all([
+                        customer.contactsId ? fetch(`/api/customerInfo/getContacts/${customer.contactsId}`).then(r => r.json()).catch(() => null) : null,
+                        customer.addressId ? fetch(`/api/customerInfo/getAddress/${customer.addressId}`).then(r => r.json()).catch(() => null) : null
+                    ]);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                <td>${customer.id}</td>
+                <td>${customer.username}</td>
+                <td>${customer.firstName} ${customer.lastName}</td>
+                <td>${customer.role}</td>
+                <td>${contacts ? contacts.email : 'N/A'}</td>
+                <td>${contacts ? contacts.phone : 'N/A'}</td>
+                <td>${address ? `${address.address || ''}, ${address.city || ''}, ${address.country || ''}` : 'N/A'}</td>
+                <td>${customer.ordersId ? customer.ordersId.length : 0}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm delete-customer-btn" data-cust-id="${customer.id}">Delete</button>
+                </td>
+            `;
+                    tableBody.appendChild(row);
+                }
+
+                document.querySelectorAll('.delete-customer-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-cust-id');
+                        if (confirm('Delete this customer?')) {
+                            const res = await fetch(`/api/admin/deleteCustomer/${id}`, { method: 'DELETE' });
+                            if (res.ok) {
+                                btn.closest('tr').remove();
+                                await loadOrders();
+                                alert("✅ Customer and their orders deleted!");
+                            } else {
+                                alert("❌ Could not delete customer.");
+                            }
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error("Failed to load customers:", err);
+            }
+        }
+
+
+        document.getElementById('search-customer-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const username = document.getElementById('search-username').value.trim();
+            const result = document.getElementById('search-result');
+            result.textContent = 'Searching...';
+
+            try {
+                const res = await fetch(`/api/admin/getCustomerByUsername/${encodeURIComponent(username)}`);
+                if (!res.ok) throw new Error('Not found');
+                const customer = await res.json();
+
+                const [contacts, address] = await Promise.all([
+                    customer.contactsId ? fetch(`/api/customerInfo/getContacts/${customer.contactsId}`).then(r => r.json()).catch(() => null) : null,
+                    customer.addressId ? fetch(`/api/customerInfo/getAddress/${customer.addressId}`).then(r => r.json()).catch(() => null) : null
+                ]);
+
+                result.innerHTML = `
+            <div class="card border-info">
+              <div class="card-header bg-info text-white">Customer Details</div>
+              <div class="card-body">
+                <p><strong>ID:</strong> ${customer.id}</p>
+                <p><strong>Username:</strong> ${customer.username}</p>
+                <p><strong>Name:</strong> ${customer.firstName} ${customer.lastName}</p>
+                <p><strong>Role:</strong> ${customer.role}</p>
+                <p><strong>Email:</strong> ${contacts ? contacts.email : 'N/A'}</p>
+                <p><strong>Phone:</strong> ${contacts ? contacts.phone : 'N/A'}</p>
+                <p><strong>Address:</strong> ${address ? `${address.address || ''}, ${address.city || ''}, ${address.country || ''}` : 'N/A'}</p>
+                <p><strong>Orders Count:</strong> ${customer.ordersId ? customer.ordersId.length : 0}</p>
+              </div>
+            </div>`;
+            } catch (err) {
+                result.textContent = "❌ No customer found with that username.";
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Handle new customer creation from Admin
+        document.getElementById('adminRegisterForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const newCustomer = {
+                firstName: document.getElementById('newFirstName').value,
+                lastName: document.getElementById('newLastName').value,
+                username: document.getElementById('newUsername').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value
+            };
+
+            try {
+                const res = await fetch("/api/registrationOfNewCustomer", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newCustomer)
+                });
+
+                if (res.ok) {
+                    alert("✅ Customer created successfully.");
+                    document.getElementById('adminRegisterForm').reset();
+                    await loadCustomers();  // refresh customer list
+                } else {
+                    alert("❌ Failed to create customer. Username may already exist.");
+                }
+            } catch (err) {
+                console.error("Error creating customer:", err);
+                alert("❌ Unexpected error. Try again.");
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadProducts();
+
+            document.getElementById("createProductForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const name = document.getElementById("productName").value.trim();
+                const price = parseFloat(document.getElementById("productPrice").value);
+                const imagePath = document.getElementById("productImage").value.trim(); // ✅ new field
+
+                const product = { name, price, imagePath }; // ✅ include imagePath
+
+                const res = await fetch("/api/admin/createProduct", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(product)
+                });
+
+                if (res.ok) {
+                    alert("✅ Product created successfully");
+                    e.target.reset();
+                    loadProducts();
+                } else {
+                    alert("❌ Failed to create product.");
+                }
+            });
+
+        });
+
+
+        async function loadProducts() {
+            try {
+                const res = await fetch("/api/ListOfAllProducts");
+                const products = await res.json();
+                const table = document.getElementById("productTable");
+                table.innerHTML = "";
+
+                products
+                    .filter(p => p.name !== "???") // ✅ filter out products named ???
+                    .forEach(p => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                   <td>${p.id}</td>
+                   <td><input type="text" class="form-control" id="name-${p.id}" value="${p.name}"></td>
+                   <td><input type="number" class="form-control" id="price-${p.id}" value="${p.price.toFixed(2)}"></td>
+                   <td>
+                       <img src="${p.imagePath || 'https://placehold.co/100x60?text=No+Image'}" alt="${p.name}"
+                       style="max-height: 60px; max-width: 100px; object-fit: cover; border-radius: 4px;">
+                   </td>
+                   <td>
+                       <button class="btn btn-sm btn-primary me-1" onclick="updateProduct(${p.id})">Update</button>
+                       <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+                   </td>
+                `;
+                        table.appendChild(row);
+                    });
+            } catch (err) {
+                console.error("Error loading products:", err);
+            }
+        }
+
+
+        async function updateProduct(id) {
+            const name = document.getElementById(`name-${id}`).value.trim();
+            const price = parseFloat(document.getElementById(`price-${id}`).value);
+
+            if (!name || isNaN(price)) {
+                alert("❗ Please enter a valid name and price.");
+                return;
+            }
+
+            const updatedProduct = { id, name, price };
+
+            try {
+                const res = await fetch("/api/admin/updateProduct", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedProduct)
+                });
+
+                if (res.ok) {
+                    alert("✅ Product updated successfully.");
+                    loadProducts(); // refresh
+                } else {
+                    alert("❌ Failed to update product.");
+                }
+            } catch (err) {
+                console.error("Error updating product:", err);
+                alert("❌ An unexpected error occurred.");
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm(`Delete product #${id}?`)) return;
+
+            const res = await fetch(`/api/admin/deleteProduct/${id}`, { method: "DELETE" });
+
+            if (res.ok) {
+                alert("✅ Product deleted.");
+                loadProducts();
+            } else {
+                alert("❌ Could not delete product.");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+        async function loadAllReviews() {
+            const container = document.getElementById('reviewList');
+            container.innerHTML = `<p class="text-muted">Loading reviews...</p>`;
+
+            try {
+                const res = await fetch('/api/admin/ListOfAllReviews', { credentials: 'include' });
+                if (!res.ok) throw new Error("Failed to fetch");
+
+                const reviews = await res.json();
+
+                if (reviews.length === 0) {
+                    container.innerHTML = `<p class="text-warning">⚠️ No reviews found.</p>`;
+                    return;
+                }
+
+                const tableHTML = `
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Username</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${reviews.map(r => `
+                        <tr>
+                            <td>${r.orderId ?? 'N/A'}</td>
+                            <td>${r.customerUsername ?? 'N/A'}</td>
+                            <td>⭐ ${r.rating}/5</td>
+                            <td>${r.reviewText || 'No comment'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+                container.innerHTML = tableHTML;
+
+            } catch (err) {
+                console.error("Error loading reviews:", err);
+                container.innerHTML = `<p class="text-danger">❌ Failed to load reviews. Try again later.</p>`;
+            }
+        }
+        async function loadAllReviews() {
+            const container = document.getElementById('reviewList');
+            container.innerHTML = `<p class="text-muted">Loading reviews...</p>`;
+
+            try {
+                const res = await fetch('/api/admin/ListOfAllReviews', { credentials: 'include' });
+                if (!res.ok) throw new Error("Failed to fetch");
+
+                const reviews = await res.json();
+
+                if (reviews.length === 0) {
+                    container.innerHTML = `<p class="text-warning">⚠️ No reviews found.</p>`;
+                    return;
+                }
+
+                const tableHTML = `
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Username</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${reviews.map(r => `
+                        <tr>
+                            <td>${r.orderId ?? 'N/A'}</td>
+                            <td>${r.customerUsername ?? 'N/A'}</td>
+                            <td>⭐ ${r.rating}/5</td>
+                            <td>${r.reviewText || 'No comment'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+                container.innerHTML = tableHTML;
+
+            } catch (err) {
+                console.error("Error loading reviews:", err);
+                container.innerHTML = `<p class="text-danger">❌ Failed to load reviews. Try again later.</p>`;
+            }
+        }
+
+
+        // ✅ Call function when page loads
+        document.addEventListener("DOMContentLoaded", loadAllReviews);
+
+    </script>
+</body>
+</html>

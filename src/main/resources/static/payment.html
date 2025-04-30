@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pet Shop – Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f5faff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .navbar {
+            background-color: #e3f2fd !important;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .btn-outline-secondary {
+            border-color: #74c0fc;
+            color: #0077b6;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #d0ebff;
+            color: #005fa3;
+        }
+        .btn-outline-primary {
+            border-color: #91d5ff;
+        }
+        .btn-outline-primary:hover {
+            background-color: #bae0ff;
+        }
+        .btn-outline-dark:hover {
+            background-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-warning-subtle px-4">
+    <a class="navbar-brand fw-bold" href="index.html">🐾 Pet Shop</a>
+</nav>
+
+<div class="container my-5">
+    <h2 class="mb-4">💳 Confirm Payment</h2>
+    <p>You're one click away from placing your order.</p>
+    <button id="confirm-payment-btn" class="btn btn-primary">✅ Confirm Payment</button>
+</div>
+
+<script>
+    async function getCurrentUser() {
+        try {
+            const res = await fetch("/api/current-user", {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (err) {
+            console.error("Session check failed:", err);
+            return null;
+        }
+    }
+
+    document.getElementById('confirm-payment-btn').addEventListener('click', async () => {
+        const user = await getCurrentUser();
+        if (!user || !user.username) {
+            alert("🔐 Please log in to pay.");
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const cartKey = `cartItems_${user.username}`;
+        const cart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+
+        if (cart.length === 0) {
+            alert("🛒 Your cart is empty.");
+            window.location.href = 'cart.html';
+            return;
+        }
+
+        // Extract order info from cart
+        const productsId = cart.map(p => p.id);
+        const productsName = cart.map(p => p.name);
+        const productsPrice = cart.map(p => p.price);
+        const productsQuantity = cart.map(p => p.quantity || 1);
+
+        const totalAmount = cart.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
+
+        const orderDTO = {
+            orderDate: new Date(),
+            orderStatus: "payed",
+            totalAmount: totalAmount,
+            productsId: productsId,
+            productsName: productsName,
+            productsPrice: productsPrice,
+            productsQuantity: productsQuantity,
+            reviewId: null,
+            customerId: user.id,
+            customerUsername: user.username
+        };
+
+        console.log("📦 Order payload to submit:", JSON.stringify(orderDTO, null, 2));
+
+        try {
+            const res = await fetch('/api/order/createOrder', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(orderDTO)
+            });
+
+            if (![200, 201].includes(res.status)) throw new Error("Order failed");
+
+            alert(`🎉 Order placed! Total paid: €${totalAmount.toFixed(2)}`);
+            sessionStorage.removeItem(cartKey);
+            window.location.href = 'index.html';
+        } catch (err) {
+            console.error("❌ Order error:", err);
+            alert("❌ Could not complete order. Try again.");
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pet Shop – Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f5faff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .navbar {
+            background-color: #e3f2fd !important;
+        }
+        .product-img {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-warning-subtle px-4">
+    <a class="navbar-brand fw-bold" href="index.html">🐾 Pet Shop</a>
+    <div class="ms-auto">
+        <a href="products.html" class="btn btn-outline-dark">🛍️ Products</a>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <h1 class="mb-4">Shopping Cart</h1>
+    <div id="cart-items" class="mb-3"></div>
+    <button id="pay-btn" class="btn btn-success">💳 Pay</button>
+</div>
+
+<script>
+    async function getCurrentUser() {
+        try {
+            const res = await fetch('/api/current-user', { credentials: 'include' });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (err) {
+            console.error("Session check failed:", err);
+            return null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = await getCurrentUser();
+        if (!user || !user.username) {
+            alert("🔐 Please log in to view your cart.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const cartKey = `cartItems_${user.username}`;
+        const rawCart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+
+        const merged = {};
+        rawCart.forEach(item => {
+            if (!merged[item.id]) {
+                merged[item.id] = { ...item };
+            } else {
+                merged[item.id].quantity += item.quantity;
+            }
+        });
+
+        const cart = Object.values(merged);
+        sessionStorage.setItem(cartKey, JSON.stringify(cart));
+
+        const cartItemsDiv = document.getElementById('cart-items');
+        if (cart.length === 0) {
+            cartItemsDiv.innerHTML = "<p>Your cart is empty.</p>";
+            document.getElementById('pay-btn').style.display = 'none';
+            return;
+        } else {
+            document.getElementById('pay-btn').style.display = 'block';
+        }
+
+        const list = document.createElement('ul');
+        list.className = "list-group mb-3";
+
+        cart.forEach(item => {
+            const li = document.createElement('li');
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+
+            const leftSection = document.createElement('div');
+            leftSection.className = "d-flex align-items-center";
+
+            const img = document.createElement('img');
+            img.src = item.imagePath && item.imagePath.trim() !== ''
+                ? item.imagePath
+                : 'https://placehold.co/80x50?text=No+Image';
+            img.alt = item.name;
+            img.className = 'product-img';
+
+            const name = document.createElement('span');
+            name.textContent = item.name;
+
+            leftSection.appendChild(img);
+            leftSection.appendChild(name);
+
+            const controls = document.createElement('div');
+            controls.className = 'd-flex align-items-center gap-2';
+
+            const price = document.createElement('span');
+            price.className = 'fw-bold';
+            price.id = `price-${item.id}`;
+            price.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
+
+            const btnMinus = document.createElement('button');
+            btnMinus.className = 'btn btn-sm btn-outline-secondary';
+            btnMinus.textContent = '−';
+            btnMinus.onclick = () => updateQuantity(item.id, -1);
+
+            const qty = document.createElement('span');
+            qty.id = `qty-${item.id}`;
+            qty.textContent = `x${item.quantity}`;
+
+            const btnPlus = document.createElement('button');
+            btnPlus.className = 'btn btn-sm btn-outline-secondary';
+            btnPlus.textContent = '+';
+            btnPlus.onclick = () => updateQuantity(item.id, 1);
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = 'btn btn-sm btn-outline-danger';
+            btnDelete.textContent = '🗑️';
+            btnDelete.onclick = () => removeItem(item.id);
+
+            controls.append(price, btnMinus, qty, btnPlus, btnDelete);
+            li.append(leftSection, controls);
+            list.appendChild(li);
+        });
+
+        const totalLi = document.createElement('li');
+        totalLi.className = "list-group-item d-flex justify-content-between fw-bold";
+        totalLi.id = "total-row";
+        list.appendChild(totalLi);
+        cartItemsDiv.appendChild(list);
+
+        updateTotal();
+
+        function updateQuantity(id, change) {
+            const cart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+            const item = cart.find(p => p.id === id);
+            if (!item) return;
+
+            item.quantity += change;
+            if (item.quantity < 1) item.quantity = 1;
+
+            sessionStorage.setItem(cartKey, JSON.stringify(cart));
+            document.getElementById(`qty-${id}`).textContent = `x${item.quantity}`;
+            document.getElementById(`price-${id}`).textContent = `€${(item.price * item.quantity).toFixed(2)}`;
+            updateTotal();
+        }
+
+        function removeItem(id) {
+            let cart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+            cart = cart.filter(p => p.id !== id);
+            sessionStorage.setItem(cartKey, JSON.stringify(cart));
+            location.reload();
+        }
+
+        function updateTotal() {
+            const cart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('total-row').innerHTML = `<span>Total:</span><span>€${total.toFixed(2)}</span>`;
+        }
+
+        document.getElementById('pay-btn').addEventListener('click', async () => {
+            const cart = JSON.parse(sessionStorage.getItem(cartKey)) || [];
+            if (cart.length === 0) {
+                alert("🛒 Your cart is empty!");
+                return;
+            }
+
+            const productIds = cart.map(p => p.id);
+            sessionStorage.setItem("order_product_ids", JSON.stringify(productIds));
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            sessionStorage.setItem("order_total", total.toFixed(2));
+
+            window.location.href = 'payment.html';
+        });
+
+    });
+</script>
+
+</body>
+</html>
